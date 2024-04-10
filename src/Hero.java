@@ -16,6 +16,11 @@ public class Hero {
     public int height;          //image height
     public boolean isAlive;     //a boolean to denote if the hero is alive or not
     public Rectangle rec;
+    //movement booleans
+    public boolean leftPressed;
+    public boolean rightPressed;
+    public boolean upPressed;
+    public boolean downPressed;
     //constructor
 
     public Hero(int pXpos, int pYpos, int pDx, int pDy, int pWidth, int pHeight, boolean pIsAlive) {
@@ -39,7 +44,23 @@ public class Hero {
     }
 
     //***MOVE METHODS***
-    public void move() {
+    public void move() {//user control move method
+        //horizontal motion
+        if(leftPressed==true){
+            dx=-2;
+        }else if(rightPressed==true){
+            dx=2;
+        }else{
+            dx=0;
+        }
+        //vertica motion
+        if(upPressed==true){
+            dy=-2;
+        }else if(downPressed==true){
+            dy=2;
+        }else{
+            dy=0;
+        }
         xpos = xpos + dx;
         ypos = ypos + dy;
         rec = new Rectangle (xpos,ypos,width,height);

@@ -29,6 +29,8 @@
 // Gravity (accel/deccel) *//
 
 import java.awt.Graphics2D;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.image.BufferStrategy;
 import java.awt.*;
 import javax.swing.JFrame;
@@ -42,15 +44,20 @@ import javax.swing.JPanel;
 //*******************************************************************************
 // Class Definition Section
 
-public class GameLand implements Runnable {
+public class GameLand implements Runnable, KeyListener {
 
     //Variable Declaration Section
     //Declare the variables used in the program
     //You can set their initial values here if you want
 
     public Image background;
+    public Hero knight;
+    public Image knightPic;
+    public Hero egg;
+    public Image eggPic;
+    public Cloud cloud1;
     //Sets the width and height of the program window
-    final int WIDTH = 1000;
+    final int WIDTH = 1200;
     final int HEIGHT = 700;
 
     //Declare the variables needed for the graphics
@@ -81,7 +88,13 @@ public class GameLand implements Runnable {
     public GameLand() {
         setUpGraphics(); //this calls the setUpGraphics() method
         //(2)***CONSTRUCTING OBJECTS***
-
+        knight = new Hero (100,100,10,10,100,100,true);
+        knightPic = Toolkit.getDefaultToolkit().getImage("knight.png");
+        egg = new Hero (50,50,0,0,70,50,true);
+        eggPic = Toolkit.getDefaultToolkit().getImage("egg.png");
+        background = Toolkit.getDefaultToolkit().getImage("farmbackground.jpg");
+        knight.printInfo();
+        moveThings();
     }// GameLand()
 
 //*******************************************************************************
@@ -111,6 +124,8 @@ public class GameLand implements Runnable {
 
         //draw the image of your objects below:
         //DRAWING IMAGES ON SCREEN
+        g.drawImage(knightPic, knight.xpos, knight.ypos, knight.width, knight.height, null);
+        g.drawImage(eggPic, egg.xpos, egg.ypos, egg.width, egg.height, null);
 
 
         //dispose the images each time(this allows for the illusion of movement).
@@ -123,7 +138,8 @@ public class GameLand implements Runnable {
     public void moveThings() {
         //call the move() method code from your object class
         //***CALLING move() FOR OBJECTS***
-        collisions();
+        knight.move();
+        egg.move();
     }
 
     public void collisions() {
@@ -151,6 +167,7 @@ public class GameLand implements Runnable {
         canvas = new Canvas();
         canvas.setBounds(0, 0, WIDTH, HEIGHT);
         canvas.setIgnoreRepaint(true);
+        canvas.addKeyListener(this);
 
         panel.add(canvas);  // adds the canvas to the panel.
 
@@ -165,5 +182,51 @@ public class GameLand implements Runnable {
         bufferStrategy = canvas.getBufferStrategy();
         canvas.requestFocus();
         System.out.println("DONE graphic setup");
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+        //not using
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        char key = e.getKeyChar();
+        int keyCode = e.getKeyCode();
+        System.out.println("Key: " + key + ", KeyCode: " + keyCode);
+        //add if statements to tie key codes to knight.upPressed
+
+        if(keyCode==68) {
+            knight.rightPressed=true; 
+        }
+        if(keyCode==65) {
+            knight.leftPressed=true;
+        }
+        if(keyCode==87) {
+            knight.upPressed=true;
+        }
+        if(keyCode==83) {
+            knight.downPressed=true;
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        char key = e.getKeyChar();
+        int keyCode = e.getKeyCode();
+        System.out.println("Key: " + key + ", KeyCode: " + keyCode);
+        //add if statements to tie key codes to knight.upPressed
+        if(keyCode==68) {
+            knight.rightPressed=false;
+        }
+        if(keyCode==65) {
+            knight.leftPressed=false;
+        }
+        if(keyCode==87) {
+            knight.upPressed=false;
+        }
+        if(keyCode==83) {
+            knight.downPressed=false;
+        }
     }
 }
