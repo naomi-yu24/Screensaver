@@ -21,8 +21,8 @@ public class Hero {
     public boolean rightPressed;
     public boolean upPressed;
     public boolean downPressed;
-    //constructor
 
+    //constructor
     public Hero(int pXpos, int pYpos, int pDx, int pDy, int pWidth, int pHeight, boolean pIsAlive) {
         xpos = pXpos;
         ypos = pYpos;
@@ -53,7 +53,7 @@ public class Hero {
         }else{
             dx=0;
         }
-        //vertica motion
+        //vertical motion
         if(upPressed==true){
             dy=-2;
         }else if(downPressed==true){
@@ -65,6 +65,7 @@ public class Hero {
         ypos = ypos + dy;
         rec = new Rectangle (xpos,ypos,width,height);
     }
+
     public void bounce() {
         if (xpos>1000-width) {
             dx = -dx;
@@ -107,8 +108,8 @@ public class Hero {
     }
 
     public void teleport() {
-        xpos=(int)(Math.random()*1000);
-        ypos=(int)(Math.random()*700);
+        xpos=(int)(Math.random()*1000+100);
+        ypos=(int)(Math.random()*500+100);
         dx=(int)(Math.random()*10);
         dy=(int)(Math.random()*10);
     }

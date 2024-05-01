@@ -33,8 +33,11 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferStrategy;
 import java.awt.*;
+import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import java.util.Timer;
+import java.util.TimerTask;
 
 //***MAKING OBJECTS***
 //(1) declare
@@ -51,11 +54,14 @@ public class GameLand implements Runnable, KeyListener {
     //You can set their initial values here if you want
 
     public Image background;
+    public Image gameOverScreen;
+    public Image victoryScreen;
     public Hero knight;
     public Image knightPic;
     public Hero egg;
     public Image eggPic;
-    public Cloud cloud1;
+    public Cloud[] cumuli;
+    public Image cloudPic;
     //Sets the width and height of the program window
     final int WIDTH = 1200;
     final int HEIGHT = 700;
@@ -66,11 +72,17 @@ public class GameLand implements Runnable, KeyListener {
     public JPanel panel;
 
     public BufferStrategy bufferStrategy;
+    public boolean startScreen=true;
+    public boolean isPlaying=true;
+    public boolean gameOver=false;
+    public boolean victory=false;
+    public int counter=50;
+    public long startTime;
+    public long currentTime;
+    public long elapsedTime;
 
     //Declare the objects used in the program below
     //(1)***DECLARING OBJECTS/IMAGES***
-
-    public Hero[] birds;
 
     // Main method definition: PSVM
     // This is the code that runs first and automatically
@@ -89,12 +101,25 @@ public class GameLand implements Runnable, KeyListener {
         setUpGraphics(); //this calls the setUpGraphics() method
         //(2)***CONSTRUCTING OBJECTS***
         knight = new Hero (100,100,10,10,100,100,true);
-        knightPic = Toolkit.getDefaultToolkit().getImage("knight.png");
         egg = new Hero (50,50,0,0,70,50,true);
+        knight.printInfo();
+
+        cloudPic = Toolkit.getDefaultToolkit().getImage("cloud.png");
+        cumuli = new Cloud[5];
+        for(int i = 0; i < cumuli.length; i=i+1) {
+            int randX = (int)(Math.random()*1200);
+            int randY = (int)(Math.random()*700);
+            cumuli[i] = new Cloud(randX,randY,5,5);
+        }
+        startTime = System.currentTimeMillis();
+        knightPic = Toolkit.getDefaultToolkit().getImage("knight.png");
         eggPic = Toolkit.getDefaultToolkit().getImage("egg.png");
         background = Toolkit.getDefaultToolkit().getImage("farmbackground.jpg");
-        knight.printInfo();
-        moveThings();
+        gameOverScreen = Toolkit.getDefaultToolkit().getImage("gameover.png");
+        victoryScreen = Toolkit.getDefaultToolkit().getImage("victoryScreen.png");
+
+
+        run();
     }// GameLand()
 
 //*******************************************************************************
@@ -107,9 +132,26 @@ public class GameLand implements Runnable, KeyListener {
     public void run() {
         //for the moment we will loop things forever using a while loop
         while (true) {
+            timer();
             moveThings();  //move all the game objects
             render();  // paint the graphics
-            pause(20); // sleep for 20 ms
+            collisions();
+
+            if(counter>=5000){
+                victory=true;
+            }
+            if(counter<0){
+                gameOver=true;
+            }
+            if(elapsedTime==60) {
+                gameOver=true;
+            }
+            if(victory==true) {
+                pause(20);
+            }
+            if(gameOver==true) {
+                pause(20);
+            }
         }
     }
 
@@ -118,14 +160,47 @@ public class GameLand implements Runnable, KeyListener {
         Graphics2D g = (Graphics2D) bufferStrategy.getDrawGraphics();
         g.clearRect(0, 0, WIDTH, HEIGHT);
 
+        if(startScreen==true) {
+            g.drawString("press space bar to start", 600,350);
+        }
+
+        for(int i=0; i<cumuli.length; i=i+1) {
+            g.drawImage(cloudPic, cumuli[i].xpos, cumuli[i].ypos, cumuli[i].width, cumuli[i].height, null);
+        }
+
+        if(isPlaying==true) {
+            g.drawImage(background, 0, 0, WIDTH, HEIGHT, null);
+            g.drawString("Score: " + String.valueOf(counter), 1000, 100);
+            g.drawString("Time: " + elapsedTime, 1000, 120);
+            g.drawString("To win, reach 5000 before the timer gets to 60!", 450, 350);
+            g.drawString("Don't let the score get to 0!", 500, 370);
+        }
+
         //draw background
 
-        g.drawImage(background, 0, 0, WIDTH, HEIGHT, null);
+        if(gameOver==true) {
+
+            g.drawImage(gameOverScreen, 0, 0, WIDTH, HEIGHT, null);
+            g.dispose();
+        }
+
+        if(victory==true) {
+            g.drawImage(victoryScreen, 0, 0, WIDTH, HEIGHT, null);
+            g.dispose();
+        }
 
         //draw the image of your objects below:
         //DRAWING IMAGES ON SCREEN
         g.drawImage(knightPic, knight.xpos, knight.ypos, knight.width, knight.height, null);
         g.drawImage(eggPic, egg.xpos, egg.ypos, egg.width, egg.height, null);
+        for(int i=0; i<cumuli.length; i=i+1) {
+            g.drawImage(cloudPic, cumuli[i].xpos, cumuli[i].ypos, cumuli[i].width, cumuli[i].height, null);
+            g.dispose();
+        }
+
+        if(gameOver==true) {
+            g.drawString("game over", 400,400);
+        }
 
 
         //dispose the images each time(this allows for the illusion of movement).
@@ -134,18 +209,41 @@ public class GameLand implements Runnable, KeyListener {
         bufferStrategy.show();
     }
 
+    public void timer() {
+        currentTime = System.currentTimeMillis();
+        elapsedTime=(int)((currentTime-startTime)*.001);
+    }
+
     //(4)***MOVE THINGS***
     public void moveThings() {
         //call the move() method code from your object class
         //***CALLING move() FOR OBJECTS***
         knight.move();
         egg.move();
+        for(int i=0; i<cumuli.length; i=i+1) {
+            cumuli[i].bouncingMove();
+        }
     }
 
+    public void freeze() {
+        knight.dx=0;
+        knight.dy=0;
+        egg.dx=0;
+        egg.dy=0;
+    }
     public void collisions() {
+        if(knight.rec.intersects(egg.rec)) {
+            counter = counter + 200;
+            egg.teleport();
+        }
+        for(int i=1; i<cumuli.length; i=i+1) {
+            if(cumuli[i].rec.intersects(knight.rec) && cumuli[i].isAlive==true) {
+                counter = counter -1;
+            }
+        }
     }
     //Pauses or sleeps the computer for the amount specified in milliseconds
-    public void pause ( int time){
+    public void pause (int time){
         try {
             Thread.sleep(time);
         } catch (InterruptedException e) {
@@ -196,16 +294,16 @@ public class GameLand implements Runnable, KeyListener {
         System.out.println("Key: " + key + ", KeyCode: " + keyCode);
         //add if statements to tie key codes to knight.upPressed
 
-        if(keyCode==68) {
+        if(keyCode==39) {
             knight.rightPressed=true; 
         }
-        if(keyCode==65) {
+        if(keyCode==37) {
             knight.leftPressed=true;
         }
-        if(keyCode==87) {
+        if(keyCode==38) {
             knight.upPressed=true;
         }
-        if(keyCode==83) {
+        if(keyCode==40) {
             knight.downPressed=true;
         }
     }
@@ -216,16 +314,16 @@ public class GameLand implements Runnable, KeyListener {
         int keyCode = e.getKeyCode();
         System.out.println("Key: " + key + ", KeyCode: " + keyCode);
         //add if statements to tie key codes to knight.upPressed
-        if(keyCode==68) {
+        if(keyCode==39) {
             knight.rightPressed=false;
         }
-        if(keyCode==65) {
+        if(keyCode==37) {
             knight.leftPressed=false;
         }
-        if(keyCode==87) {
+        if(keyCode==38) {
             knight.upPressed=false;
         }
-        if(keyCode==83) {
+        if(keyCode==40) {
             knight.downPressed=false;
         }
     }

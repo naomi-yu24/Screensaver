@@ -7,28 +7,25 @@ import java.awt.*;
 //entire apodosis is a boolean --> if(astro.rec.intersects(star.rec)) is a boolean
 public class Cloud {
     //declaration
-
-    public int xpos;            //the x position
-    public int ypos;            //the y position
-    public int dx;              //the speed of the hero in the x direction
-    public int dy;              //the speed of the hero in the y direction
-    public int width;           //image width
-    public int height;          //image height
-    public boolean isAlive;     //a boolean to denote if the hero is alive or not
+    public String name;
+    public int xpos;
+    public int ypos;
+    public int dx;
+    public int dy;
+    public int width;
+    public int height;
+    public boolean isAlive;
     public Rectangle rec;
-    //movement booleans
-    
-    //constructor
 
-    public Cloud (int pXpos, int pYpos, int pDx, int pDy, int pWidth, int pHeight, boolean pIsAlive) {
+    public Cloud(int pXpos, int pYpos, int pDx, int pDy) {
         xpos = pXpos;
         ypos = pYpos;
-        dx=pDx;
-        dy=pDy;
-        width=pWidth;
-        height=pHeight;
-        isAlive=pIsAlive;
-        rec=new Rectangle(xpos,ypos,width,height);
+        dx = pDx;
+        dy = pDy;
+        width = (int)(Math.random()*40+40);
+        height = (int)(Math.random()*40+40);
+        isAlive = true;
+        rec = new Rectangle(xpos, ypos, width, height);
     }
 
     public void printInfo() {
@@ -41,11 +38,31 @@ public class Cloud {
     }
 
     //***MOVE METHODS***
-    public void move() {//user control move method
+
+    public void bouncingMove() {
+        xpos = (int)(Math.random()*1200);
+        ypos = (int)(Math.random()*700);
+        dx = (int)(Math.random()*10);
+        dy = (int)(Math.random()*10); ;
+        if(xpos>1200-width){
+            dx=-dx;
+        }
+        if(xpos<0){
+            dx=-dx;
+        }
+        if(ypos>700-height) {
+            dy = -dy;
+        }
+        if(ypos<0) {
+            dy = -dy;
+        }
+
         xpos = xpos + dx;
         ypos = ypos + dy;
-        rec = new Rectangle (xpos,ypos,width,height);
+        rec = new Rectangle(xpos, ypos, width, height);
+
     }
+
     public void teleport() {
         xpos=(int)(Math.random()*1000);
         ypos=(int)(Math.random()*700);
